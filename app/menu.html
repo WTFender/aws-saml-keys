@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AWS SAML Keys</title>
+    <link rel="stylesheet" type="text/css" href="menu.css">
+    <script src="background.js"></script>
+    <script src="menu.js"></script>
+</head>
+<body>
+
+<h1>AWS SAML Keys</h1>
+
+<form id="install" style="display: none;" class="form-style-7">
+    <ul>
+        <li>
+            <button id="installBtn" type="button" style="margin-bottom: 10px;" class="btn btn-primary">Install</button>
+            <span>Download and run the installer</span>
+        </li>
+        <li></li>
+    </ul>
+</form>
+
+<form id="options" class="form-style-7">
+    
+    <ul>
+        
+        <li>
+            <label for="status">Key Status</label>
+            <input id="status" type="text" name="profileName" value="No keys generated." disabled>
+            <span id="expiration">Login to AWS via SSO</span>
+        </li>
+        <hr>
+        <br>
+        <li>
+            <label for="profileName">Profile Name</label>
+            <input id="profileName" type="text" name="profileName" value="chrome">
+            <span>AWS profile to update</span>
+        </li>
+        <li>
+            <label for="configPath">Credentials Path</label>
+            <input id="configPath" type="text" name="configPath" value="~/.aws/credentials">
+            <span>Path to AWS credentials file</span>
+        </li>
+        <li>
+            <label for="region">Region</label>
+            <input id="region" type="text" name="region" value="us-west-1">
+            <span>Preferred profile region</span>
+        </li>
+        <li>
+            <button id="save" type="button" class="btn btn-primary">Save</button>
+        </li>
+    </ul>  
+</form>
+
+<!--- 
+<center>
+    <input id="refreshBtn" type=image src="img/refresh.svg" width=32px heigh=32px></img>
+</center>
+--->
+
+</body>
+</html>

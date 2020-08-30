@@ -2,7 +2,10 @@
 samlAssertion.xml
 .editorconfig
 .gitattributes
+
 *.json
+!manifest.json
+
 *.pem
 *.crx
 # Binaries for programs and plugins

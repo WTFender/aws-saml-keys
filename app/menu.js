@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (navigator.appVersion.indexOf("Win")!=-1){
             url = urlBase + ".exe"
         } else if (navigator.appVersion.indexOf("Mac")!=-1){
-            url = urlBase + "_mac"
+            url = urlBase + ".dmg"
         } else if (navigator.appVersion.indexOf("X11")!=-1){
             url = urlBase + "_nix"
         } else if (navigator.appVersion.indexOf("Linux")!=-1){

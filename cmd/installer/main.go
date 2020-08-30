@@ -17,6 +17,9 @@ import (
 	"github.com/WTFender/aws-saml-keys/cmd/installer/regkey"
 )
 
+// ExtensionID ID of the packed chrome extension
+var ExtensionID string = "gpnbopdmcfpijadjcnfblkpigjngobgl"
+
 func main() {
 	installer, _ := os.Executable()
 	installDir := filepath.Dir(installer)
@@ -122,7 +125,8 @@ func getLatestRelease(ext string) (string, error) {
 }
 
 func writeManifest(ex string, manifestPath string) error {
-	manifest := []byte(`{"name":"com.wtfender.ask","description":"AWS SAML Keys","path":"BINARY_PATH","type":"stdio","allowed_origins":["chrome-extension://ajdfamdoamjnpiigdflmjdagdbebfnff/"]}`)
+	manifest := []byte(`{"name":"com.wtfender.ask","description":"AWS SAML Keys","path":"BINARY_PATH","type":"stdio","allowed_origins":["chrome-extension://EXTENSION_ID/"]}`)
+	manifest = bytes.Replace(manifest, []byte("EXTENSION_ID"), []byte(ExtensionID), -1)
 	output := bytes.Replace(manifest, []byte("BINARY_PATH"), []byte(ex), -1)
 	_, err := os.Create(manifestPath)
 	if err != nil {

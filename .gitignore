@@ -6,6 +6,7 @@ samlAssertion.xml
 *.json
 !manifest.json
 
+*.zip
 *.pem
 *.crx
 # Binaries for programs and plugins

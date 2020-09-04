@@ -68,7 +68,7 @@ function connectHost() {
 function notify(msg) {
   opt = {
     type: "basic",
-    title: "AWS STS Keys",
+    title: "AWS SAML Keys",
     message: msg,
     iconUrl: "img/key48.png"
   }

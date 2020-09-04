@@ -75,6 +75,69 @@ function notify(msg) {
   chrome.notifications.create(opt)
 }
 
+function parseSAML(formData) {
+  assertion = formData['SAMLResponse']
+
+  // usually a string, sometimes an array
+  if (Object.prototype.toString.call(assertion) === "[object Array]") {
+    assertion = assertion[0];
+  }
+
+  decodedAssert = atob(assertion)
+  xml = new DOMParser().parseFromString(decodedAssert, "text/xml")
+  issueTime = xml.getElementsByTagName("saml2p:Response")[0].getAttribute('IssueInstant')
+  
+  roles = []
+  attribs = xml.getElementsByTagName("saml2:AttributeValue")
+  for (a in attribs){
+    if (attribs[a].innerHTML === undefined) {
+      continue
+    } else if (attribs[a].innerHTML.startsWith("arn:aws")){
+      roles.push(attribs[a].innerHTML)
+    }
+  }
+
+  if (roles.length == 1 ){
+    role = roles[0]
+  } else {
+    if ('roleIndex' in formData){
+      for (r in roles){
+        if (r.includes(idx)){
+          role = r
+        }
+      }
+    } else {
+      return null // wait for role selection
+    }
+  }
+
+  parts = role.split(",")
+  for (p in parts){
+    if (parts[p].includes(":saml-provider/")){
+      principalArn = parts[p]
+    } else if (parts[p].includes(":role/")){
+      roleArn = parts[p]
+    }
+  }
+
+  chrome.storage.sync.get(null, function (data) {
+    sendNativeMessage({
+      "query": "assertion",
+      "roleArn": roleArn,
+      "principalArn": principalArn,
+      "samlAssert": assertion,
+      "options": {
+        "profileName": data.profileName,
+        "configPath": data.configPath,
+        "region": data.region
+      }
+    });
+  });
+
+  chrome.storage.sync.set({ keyExpiry: Date.parse(issueTime) + 3600 * 1000 })
+}
+
+
 chrome.alarms.onAlarm.addListener(function (alarm) {
   if (alarm.name == "keyTimer") {
     notify("Keys have expired")
@@ -85,59 +148,13 @@ chrome.alarms.onAlarm.addListener(function (alarm) {
 })
 
 // SAML Assertion POST
-chrome.webRequest.onBeforeRequest.addListener(
-  function (details) {
-    if (details.method == "POST") {
-      let formData = details.requestBody.formData;
-      let cancel = false;
-      if (formData) {
-        Object.keys(formData).forEach(key => {
-          if (key == "SAMLResponse") {
-            if (Object.prototype.toString.call(formData[key]) === "[object Array]") {
-              samlAssert = formData[key][0];
-            } else if (Object.prototype.toString.call(formData[key]) === "[object String]") {
-              samlAssert = formData[key];
-            }
-
-            try {
-              decodedAssert = atob(samlAssert);
-              xml = new DOMParser().parseFromString(decodedAssert, "text/xml")
-              issueTime = xml.getElementsByTagName("saml2p:Response")[0].getAttribute('IssueInstant')
-              chrome.storage.sync.set({ keyExpiry: Date.parse(issueTime) + 3600 * 1000 })
-              values = xml.getElementsByTagName("saml2:AttributeValue")
-              for (v in values) {
-                if (values[v].innerHTML === undefined) {
-                  continue
-                } else if (values[v].innerHTML.startsWith("arn:aws:iam")) {
-                  roleArn = values[v].innerHTML.split(",")[0]
-                  principalArn = values[v].innerHTML.split(",")[1]
-                  chrome.storage.sync.get(null, function (data) {
-                    sendNativeMessage({
-                      "query": "assertion",
-                      "roleArn": roleArn,
-                      "principalArn": principalArn,
-                      "samlAssert": samlAssert,
-                      "options": {
-                        "profileName": data.profileName,
-                        "configPath": data.configPath,
-                        "region": data.region
-                      }
-                    });
-                  });
-                }
-              }
-            } catch (e) {
-              console.log(e)
-            }
-          }
-        });
-      }
-      return { cancel: cancel };
+chrome.webRequest.onBeforeRequest.addListener(function (req) {
+    if (req.method == "POST"  && 'SAMLResponse' in req.requestBody.formData) {
+      parseSAML(req.requestBody.formData)
     }
   },
-  { urls: ["https://signin.aws.amazon.com/saml", "https://*.signin.aws.amazon.com/saml"] },
-  ["requestBody"]
-)
+  {urls: ["https://signin.aws.amazon.com/saml", "https://*.signin.aws.amazon.com/saml"]},
+  ["requestBody"])
 
 // Check whether new version is installed
 chrome.runtime.onInstalled.addListener(function(details){

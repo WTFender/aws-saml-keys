@@ -3,6 +3,7 @@
 <head>
     <title>AWS SAML Keys</title>
     <link rel="stylesheet" type="text/css" href="menu.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="background.js"></script>
     <script src="menu.js"></script>
 </head>
@@ -10,47 +11,51 @@
 
 <h1>AWS SAML Keys</h1>
 
-<form id="install" style="display: none;" class="form-style-7">
-    <ul>
-        <li>
-            <button id="installBtn" type="button" style="margin-bottom: 10px;" class="btn btn-primary">Install</button>
-            <span>Download and run the installer</span>
-        </li>
-        <li></li>
-    </ul>
-</form>
-
 <form id="options" class="form-style-7">
-    
     <ul>
-        
         <li>
             <label for="status">Key Status</label>
             <input id="status" type="text" name="profileName" value="No keys generated." disabled>
             <span id="expiration">Login to AWS via SSO</span>
         </li>
-        <hr>
-        <br>
-        <li>
-            <label for="profileName">Profile Name</label>
-            <input id="profileName" type="text" name="profileName" value="chrome">
-            <span>AWS profile to update</span>
-        </li>
-        <li>
-            <label for="configPath">Credentials Path</label>
-            <input id="configPath" type="text" name="configPath" value="~/.aws/credentials">
-            <span>Path to AWS credentials file</span>
-        </li>
-        <li>
-            <label for="region">Region</label>
-            <input id="region" type="text" name="region" value="us-west-1">
-            <span>Preferred profile region</span>
-        </li>
-        <li>
-            <button id="save" type="button" class="btn btn-primary">Save</button>
-        </li>
-    </ul>  
+        <li></li>
+    </ul>
 </form>
+
+<button id="installBtn" type="button" style="margin-bottom: 10px; display: none;" class="btn btn-primary">Install</button>
+<div class="btn-grp">
+    <button style="float: left;" id="collapseBtn"><i class="fa fa-cog"></i></button>
+    <button style="float: left;" id="helpBtn"><i class="fa fa-question-circle"></i></button>
+</div>
+  
+
+<div id="collapseContent" style="display: none;">
+    <form class="form-style-7">
+        <ul>
+            <li>
+                <label for="profileName">Profile Name</label>
+                <input id="profileName" type="text" name="profileName" value="chrome">
+                <span>AWS profile to update</span>
+            </li>
+            <li>
+                <label for="configPath">Credentials Path</label>
+                <input id="configPath" type="text" name="configPath" value="~/.aws/credentials">
+                <span>Path to AWS credentials file</span>
+            </li>
+            <li>
+                <label for="region">Region</label>
+                <input id="region" type="text" name="region" value="us-west-1">
+                <span>Preferred profile region</span>
+            </li>
+            <li>
+                <button id="save" type="button" class="btn btn-primary">Save</button>
+            </li>
+        </ul>  
+    </form>
+</div>
+
+
+
 
 <!--- 
 <center>

@@ -47,17 +47,21 @@ function connectHost() {
     console.log(errMsg)
 
     errInstall = ["Specified native messaging host not found.",
-      "Native messaging host " + hostName + " is not registered.",
-      "Access to the specified native messaging host is forbidden."]
+      "Native messaging host " + hostName + " is not registered."]
 
     if (errMsg == "Chrome native messaging host exited.") {
       chrome.storage.sync.set({ err: null })
       errMsg = null
-    } else {
+    } else{
       chrome.storage.sync.set({ health: 0 })
+      
       if (errInstall.includes(errMsg)) {
         chrome.storage.sync.set({ err: "err_install" })
+      } else {
+        chrome.storage.sync.set({ err: "err" })
       }
+
+
     }
     chrome.storage.sync.set({ errMsg: errMsg })
   });

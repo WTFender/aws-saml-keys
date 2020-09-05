@@ -17,6 +17,10 @@
     background: transparent
 }
 
+.btn-grp {
+    display: table;
+    margin: auto;
+}
 
 
 h1{

@@ -22,13 +22,17 @@ function updateUI() {
             document.getElementById('expiration').classList.remove("healthy", "expired")
             document.getElementById('status').value = data.err
             document.getElementById('expiration').textContent = data.errMsg
-            // show install button
+           
+            // show help btn
+            document.getElementById('helpBtn').style.display="block";
+
+            // show install btn
             if (data.err == "err_install"){
-                document.getElementById('install').style.display="block";
-                document.getElementById('options').style.display="none";
+                document.getElementById('installBtn').style.display="block";
             } else {
-                document.getElementById('install').style.display="none";
+                document.getElementById('installBtn').style.display="none";
             }
+
             // poll for install
             setTimeout(function(){
                 sendNativeMessage({"query":"ping"})
@@ -89,10 +93,45 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         window.open(url)
     });
-    
+
+    // help button
+    helpBtn = document.getElementById("helpBtn")
+    helpBtn.addEventListener("click", function () {
+        window.open("https://github.com/WTFender/aws-saml-keys")
+    });
+
+    // settings button
+    collapseBtn = document.getElementById("collapseBtn")
+    collapseBtn.addEventListener("click", function () {
+        collapseContent = document.getElementById('collapseContent')
+        if (collapseContent.style.display === "none"){
+            collapseContent.style.display = "block"
+        } else {
+            collapseContent.style.display = "none"
+        }
+    });
+
+
+
     chrome.storage.onChanged.addListener(function(changes, namespace) {
         setTimeout(function(){
             window.location.reload(1);
          }, 1000);
     });
 });
+
+
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}

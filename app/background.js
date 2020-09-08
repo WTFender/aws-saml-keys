@@ -106,7 +106,7 @@ function parseSAML(formData) {
   } else {
     if ('roleIndex' in formData){
       for (r in roles){
-        if (r.includes(idx)){
+        if (r.includes(formData['roleIndex'])){
           role = r
         }
       }

@@ -1,7 +1,8 @@
 .DS_STORE
-samlAssertion.xml
+*.xml
 .editorconfig
 .gitattributes
+test.js
 
 *.json
 !manifest.json

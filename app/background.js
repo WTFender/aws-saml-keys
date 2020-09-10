@@ -30,7 +30,7 @@ function connectHost() {
         // update keys from saml
       } else if (message["query"] == "assertion") {
         if (message["response"] == "updated keys") {
-          console.log("Keys updated")
+          console.log("keys updated")
           notify("Updated keys")
           chrome.alarms.create("keyTimer", { delayInMinutes: 60 })
           chrome.storage.sync.set({ keyStatus: "active" })
@@ -106,11 +106,12 @@ function parseSAML(formData) {
   } else {
     if ('roleIndex' in formData){
       for (r in roles){
-        if (r.includes(formData['roleIndex'])){
-          role = r
+        if (roles[r].includes(formData['roleIndex'])){
+          role = roles[r]
         }
       }
     } else {
+      console.log('multiple roles, roleIndex required')
       return null // wait for role selection
     }
   }
@@ -163,7 +164,7 @@ chrome.webRequest.onBeforeRequest.addListener(function (req) {
 // Check whether new version is installed
 chrome.runtime.onInstalled.addListener(function(details){
   if(details.reason == "install"){
-      console.log("Setting defaults.")
+      console.log("set defaults")
       chrome.storage.sync.set({
         health: 0,
         err: null,

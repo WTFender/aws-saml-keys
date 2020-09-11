@@ -5,19 +5,16 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/bigkevmcd/go-configparser"
 	"io"
 	"log"
 	"os"
 	"os/user"
 	"strings"
 	"unsafe"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/bigkevmcd/go-configparser"
 )
 
 // constants for Logger
@@ -211,30 +208,10 @@ func generateKeys(roleArn string, principalArn string, samlAssert string) *sts.A
 
 	result, err := svc.AssumeRoleWithSAML(input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case sts.ErrCodeMalformedPolicyDocumentException:
-				fmt.Println(sts.ErrCodeMalformedPolicyDocumentException, aerr.Error())
-			case sts.ErrCodePackedPolicyTooLargeException:
-				fmt.Println(sts.ErrCodePackedPolicyTooLargeException, aerr.Error())
-			case sts.ErrCodeIDPRejectedClaimException:
-				fmt.Println(sts.ErrCodeIDPRejectedClaimException, aerr.Error())
-			case sts.ErrCodeInvalidIdentityTokenException:
-				fmt.Println(sts.ErrCodeInvalidIdentityTokenException, aerr.Error())
-			case sts.ErrCodeExpiredTokenException:
-				fmt.Println(sts.ErrCodeExpiredTokenException, aerr.Error())
-			case sts.ErrCodeRegionDisabledException:
-				fmt.Println(sts.ErrCodeRegionDisabledException, aerr.Error())
-			default:
-				fmt.Println(aerr.Error())
-			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			fmt.Println(err.Error())
-		}
+		Error.Printf("Unable to generate keys: %v", err)
+	} else {
+		Trace.Printf("Keys generated")
 	}
-	Trace.Printf("Keys generated")
 	return result
 }
 

@@ -45,10 +45,7 @@ function updateUI() {
             if (data.keyStatus == "active") {
                 document.getElementById('expiration').classList.add("healthy")
                 document.getElementById('expiration').classList.remove("unhealthy", "expired")
-                console.log(data.keyExpiry)
-                console.log(Date.now())
                 expireMins = ((data.keyExpiry - Date.now()) / 1000 / 60).toFixed()
-                console.log(expireMins)
                 document.getElementById('expiration').textContent = "Expires in " + expireMins + "m"
             // expired keys
             } else if (data.keyStatus == "expired"){

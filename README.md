@@ -17,3 +17,6 @@ Install the [host application](https://github.com/WTFender/aws-saml-keys/release
 
 **Access to the specified native messaging host is forbidden.**  
 Dev permission error. Ensure manifest (com.wtfender.ask.json) extension ID matches chrome.
+
+**Failed to start the native messaging host.**
+Dev permission error. Try making the file executable.

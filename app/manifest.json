@@ -1,6 +1,6 @@
 {
   "name": "AWS SAML Keys",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "manifest_version": 2,
   "description": "Generate AWS access keys from a SAML login to the AWS console.",
   "icons": { 

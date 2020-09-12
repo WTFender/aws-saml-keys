@@ -5,16 +5,17 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/bigkevmcd/go-configparser"
 	"io"
 	"log"
 	"os"
 	"os/user"
 	"strings"
 	"unsafe"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/bigkevmcd/go-configparser"
 )
 
 // constants for Logger
@@ -227,6 +228,8 @@ func updateKeys(iMsg IncomingMessage) {
 	p, err := configparser.NewConfigParserFromFile(configPath)
 	if err != nil {
 		Error.Printf("Config parsing error: %v", err)
+		Trace.Printf("Creating new credentials file")
+		p = configparser.New()
 	}
 
 	p.AddSection(iMsg.Options.ProfileName)

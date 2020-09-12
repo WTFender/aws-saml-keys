@@ -5,16 +5,17 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/bigkevmcd/go-configparser"
 	"io"
 	"log"
 	"os"
 	"os/user"
 	"strings"
 	"unsafe"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/bigkevmcd/go-configparser"
 )
 
 // constants for Logger
@@ -144,10 +145,12 @@ func parseMessage(msg []byte) {
 	case "ping":
 		oMsg.Response = "pong"
 	case "assertion":
-		updateKeys(iMsg)
-		oMsg.Response = "updated keys"
+		oMsg.Response = "updated_keys"
+		if err := updateKeys(iMsg); err != nil {
+			oMsg.Response = "err_keys"
+		}
 	default:
-		oMsg.Response = "unknown query"
+		oMsg.Response = "err_query"
 	}
 
 	send(oMsg)
@@ -197,7 +200,7 @@ func writeMessageLength(msg []byte) {
 	}
 }
 
-func generateKeys(roleArn string, principalArn string, samlAssert string) *sts.AssumeRoleWithSAMLOutput {
+func generateKeys(roleArn string, principalArn string, samlAssert string) (*sts.AssumeRoleWithSAMLOutput, error) {
 	svc := sts.New(session.New())
 	input := &sts.AssumeRoleWithSAMLInput{
 		DurationSeconds: aws.Int64(3600),
@@ -209,24 +212,27 @@ func generateKeys(roleArn string, principalArn string, samlAssert string) *sts.A
 	result, err := svc.AssumeRoleWithSAML(input)
 	if err != nil {
 		Error.Printf("Unable to generate keys: %v", err)
-	} else {
-		Trace.Printf("Keys generated")
+		return result, err
 	}
-	return result
+	return result, nil
 }
 
-func updateKeys(iMsg IncomingMessage) {
+func updateKeys(iMsg IncomingMessage) error {
 
-	keys := generateKeys(iMsg.RoleArn, iMsg.PrincipalArn, iMsg.SamlAssert)
+	keys, err := generateKeys(iMsg.RoleArn, iMsg.PrincipalArn, iMsg.SamlAssert)
+	if err != nil {
+		return err
+	}
 
 	usr, _ := user.Current()
 	dir := usr.HomeDir
 	configPath := strings.Replace(iMsg.Options.ConfigPath, "~", dir, -1)
-	Trace.Printf("Reading config: %v", configPath)
 
 	p, err := configparser.NewConfigParserFromFile(configPath)
 	if err != nil {
 		Error.Printf("Config parsing error: %v", err)
+		Trace.Printf("Creating new credentials file")
+		p = configparser.New()
 	}
 
 	p.AddSection(iMsg.Options.ProfileName)
@@ -236,4 +242,5 @@ func updateKeys(iMsg IncomingMessage) {
 	p.Set(iMsg.Options.ProfileName, "aws_session_token", *keys.Credentials.SessionToken)
 	p.SaveWithDelimiter(configPath, "=")
 	Trace.Printf("Keys updated")
+	return nil
 }

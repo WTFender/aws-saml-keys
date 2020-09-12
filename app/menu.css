@@ -1,16 +1,6 @@
-.healthy {
+.active {
     color: #F4F6F7 !important;
     background: #2ECC71 !important;
-}
-
-.unhealthy {
-    color: #F4F6F7 !important;
-    background: #E74C3C !important;
-}
-
-.expired {
-    color: #F4F6F7 !important;
-    background: #ffae00  !important;
 }
 
 #status{

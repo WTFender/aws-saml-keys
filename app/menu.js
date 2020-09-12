@@ -7,24 +7,35 @@ function updateUI() {
         configPath: "~/.aws/credentials",
         region: "us-east-1",
         keyStatus: "No keys generated.",
-        keyExpiry: "Login to AWS via SSO to generate new keys"
+        keyExpiry: "Login to AWS via SSO to generate new keys",
+        notify: "enabled"
     }
 
-    chrome.storage.sync.get(defaults, function(data) {
+    chrome.storage.local.get(defaults, function(data) {
 
         document.getElementById('profileName').value = data.profileName
         document.getElementById('configPath').value = data.configPath
         document.getElementById('region').value = data.region
+        document.getElementById('notify').value = data.notify
+        document.getElementById('status').value = data.keyStatus
+        document.getElementById("errMsg").innerHTML = data.err + ": " + data.errMsg
 
-        // unhealthy
-        if (data.health == 0){
-            document.getElementById('expiration').classList.add("unhealthy")
-            document.getElementById('expiration').classList.remove("healthy", "expired")
-            document.getElementById('status').value = data.err
-            document.getElementById('expiration').textContent = data.errMsg
-           
-            // show help btn
-            document.getElementById('helpBtn').style.display="block";
+        // active keys
+        if (data.keyStatus == "active") {
+            document.getElementById('expiration').classList.add("active")
+            expireMins = ((data.keyExpiry - Date.now()) / 1000 / 60).toFixed()
+            document.getElementById('expiration').textContent = "Expires in " + expireMins + "m"
+        } else {
+            document.getElementById('expiration').classList.remove("active")
+
+        }
+
+        // errors
+        if (data.health == 1){
+            document.getElementById("error").style.display="none";
+        } else {
+            // unhealthy
+            document.getElementById("error").style.display="block";
 
             // show install btn
             if (data.err == "err_install"){
@@ -37,22 +48,7 @@ function updateUI() {
             setTimeout(function(){
                 sendNativeMessage({"query":"ping"})
                 updateUI() // loop
-             }, 5000);
-        // healthy
-        } else if (data.health == 1){
-            document.getElementById('status').value = data.keyStatus
-            // valid keys
-            if (data.keyStatus == "active") {
-                document.getElementById('expiration').classList.add("healthy")
-                document.getElementById('expiration').classList.remove("unhealthy", "expired")
-                expireMins = ((data.keyExpiry - Date.now()) / 1000 / 60).toFixed()
-                document.getElementById('expiration').textContent = "Expires in " + expireMins + "m"
-            // expired keys
-            } else if (data.keyStatus == "expired"){
-                document.getElementById('expiration').classList.add("expired")
-                document.getElementById('expiration').classList.remove("unhealthy", "healthy")
-                document.getElementById('expiration').textContent = "Login via SSO to generate new keys"
-            }
+            }, 5000);
         }
     });
 }
@@ -65,10 +61,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // save button
     saveBtn = document.getElementById('save')
     saveBtn.addEventListener('click', function () {
-        chrome.storage.sync.set({
+        chrome.storage.local.set({
             profileName: document.getElementById('profileName').value,
             configPath: document.getElementById('configPath').value,
-            region: document.getElementById('region').value
+            region: document.getElementById('region').value,
+            notify: document.getElementById('notify').value
         })
     });
 
@@ -107,16 +104,15 @@ document.addEventListener('DOMContentLoaded', function () {
             collapseContent.style.display = "none"
         }
     });
-
-
-
-    chrome.storage.onChanged.addListener(function(changes, namespace) {
-        setTimeout(function(){
-            window.location.reload(1);
-         }, 1000);
-    });
 });
 
+
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+   // setTimeout(function(){
+    //window.location.reload(1);
+    // }, 1000);
+    updateUI()
+});
 
 var coll = document.getElementsByClassName("collapsible");
 var i;

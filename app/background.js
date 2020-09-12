@@ -17,23 +17,32 @@ function connectHost() {
 
     if ("query" in message) {
 
-      // healthcheck
-      if (message["query"] == "ping") {
-        if (message["response"] == "pong") {
-          chrome.storage.sync.set({ health: 1 })
-          chrome.storage.sync.set({ err: null })
-          chrome.storage.sync.set({ errMsg: null })
-        } else {
-          chrome.storage.sync.set({ health: 0 })
-        }
+      q = message["query"]
+      r = message["response"]
 
-        // update keys from saml
-      } else if (message["query"] == "assertion") {
-        if (message["response"] == "updated keys") {
-          console.log("keys updated")
+      if (q == "ping"){
+
+        if (r == "pong"){
+          // healthy
+          chrome.storage.local.set({ health: 1 })
+          chrome.storage.local.set({ err: null })
+          chrome.storage.local.set({ errMsg: null })
+        } else {
+          // not healthy
+          chrome.storage.local.set({ health: 0 })
+        }
+        
+      } else if (q == "assertion"){
+        
+        if (r == "updated_keys"){
           notify("Updated keys")
           chrome.alarms.create("keyTimer", { delayInMinutes: 60 })
-          chrome.storage.sync.set({ keyStatus: "active" })
+          chrome.storage.local.set({ keyStatus: "active" })
+
+        } else if (r == "err_keys"){
+          notify("Error updating keys")
+          chrome.storage.local.set({ error: "err_keys" })
+          chrome.storage.local.set({ errMsg: "Host binary unable to update keys."})
         }
       }
     }
@@ -50,20 +59,20 @@ function connectHost() {
       "Native messaging host " + hostName + " is not registered."]
 
     if (errMsg == "Chrome native messaging host exited.") {
-      chrome.storage.sync.set({ err: null })
+      chrome.storage.local.set({ err: null })
       errMsg = null
     } else{
-      chrome.storage.sync.set({ health: 0 })
+      chrome.storage.local.set({ health: 0 })
       
       if (errInstall.includes(errMsg)) {
-        chrome.storage.sync.set({ err: "err_install" })
+        chrome.storage.local.set({ err: "err_install" })
       } else {
-        chrome.storage.sync.set({ err: "err" })
+        chrome.storage.local.set({ err: "err" })
       }
 
 
     }
-    chrome.storage.sync.set({ errMsg: errMsg })
+    chrome.storage.local.set({ errMsg: errMsg })
   });
   console.log('host connected')
   return port
@@ -76,7 +85,11 @@ function notify(msg) {
     message: msg,
     iconUrl: "img/key48.png"
   }
-  chrome.notifications.create(opt)
+  chrome.storage.local.get(['notify'], function(data) {
+    if (data.notify == "enabled"){
+      chrome.notifications.create(opt)
+    }
+  });
 }
 
 function parseSAML(formData) {
@@ -125,7 +138,7 @@ function parseSAML(formData) {
     }
   }
 
-  chrome.storage.sync.get(null, function (data) {
+  chrome.storage.local.get(null, function (data) {
     sendNativeMessage({
       "query": "assertion",
       "roleArn": roleArn,
@@ -139,14 +152,14 @@ function parseSAML(formData) {
     });
   });
 
-  chrome.storage.sync.set({ keyExpiry: Date.parse(issueTime) + 3600 * 1000 })
+  chrome.storage.local.set({ keyExpiry: Date.parse(issueTime) + 3600 * 1000 })
 }
 
 
 chrome.alarms.onAlarm.addListener(function (alarm) {
   if (alarm.name == "keyTimer") {
     notify("Keys have expired")
-    chrome.storage.sync.set({
+    chrome.storage.local.set({
       keyStatus: "expired"
     })
   }
@@ -165,15 +178,16 @@ chrome.webRequest.onBeforeRequest.addListener(function (req) {
 chrome.runtime.onInstalled.addListener(function(details){
   if(details.reason == "install"){
       console.log("set defaults")
-      chrome.storage.sync.set({
+      chrome.storage.local.set({
         health: 0,
-        err: null,
-        errMsg: null,
+        err: "err_install",
+        errMsg: "install the host binary",
         profileName: "saml",
         configPath: "~/.aws/credentials",
         region: "us-east-1",
         keyStatus: "No keys generated.",
-        keyExpiry: "Login to AWS via SSO to generate new keys"
+        keyExpiry: "Login to AWS via SSO to generate new keys",
+        notify: "enabled"
       })
   }else if(details.reason == "update"){
       // pass

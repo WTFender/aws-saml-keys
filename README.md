@@ -1,4 +1,5 @@
 # AWS SAML Keys
+:warning: **11/2020**: AWS SSO supports [temporary access key provisioning](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html), a polished alternative for AWS Organizations.
 
 Chrome Extension and host application that generate AWS Access Keys from a SAML login to the console.
 
